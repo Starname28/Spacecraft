@@ -25,7 +25,7 @@ public:
 		return nameSpaceship;
 	}
 
-	static Planet* sharedPlanet(const std::string& namePlanet, const std::string nameSpaceship)
+	static Planet* sharedPlanet(const std::string& namePlanet, const std::string& nameSpaceship)
 	{
 		static Planet* planet = new Planet(namePlanet, nameSpaceship);
 		return planet;
