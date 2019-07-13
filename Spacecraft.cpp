@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <memory>
 
 class Planet
 {
@@ -25,28 +26,28 @@ public:
 		return nameSpaceship;
 	}
 
-	static Planet* sharedPlanet(const std::string& namePlanet, const std::string& nameSpaceship)
+	static std::shared_ptr<Planet> sharedPlanet(const std::string& namePlanet, const std::string& nameSpaceship)
 	{
-		static Planet* planet = new Planet(namePlanet, nameSpaceship);
+		static std::shared_ptr<Planet> planet(new Planet(namePlanet, nameSpaceship));
 		return planet;
 	}
 };
 
-class IAstronauts
+class IAstronaut
 {
 public:
-	virtual void sitOnTheSpaceship(Planet* planet) = 0;
-	virtual void comeOffFromTheSpaceship(Planet* planet) = 0;
+	virtual void sitOnTheSpaceship(std::shared_ptr<Planet> planet) = 0;
+	virtual void comeOffFromTheSpaceship(std::shared_ptr<Planet> planet) = 0;
 };
 
-class Astronauts : public IAstronauts
+class Astronaut : public IAstronaut
 {
 public:
-	virtual void sitOnTheSpaceship(Planet* planet) override
+	virtual void sitOnTheSpaceship(std::shared_ptr<Planet> planet) override
 	{
 		std::cout << "Sit on the Planet " <<  planet->getNamePlanet() << " on the spaceship " << planet->getNameSpaceship() << std::endl;
 	}
-	virtual void comeOffFromTheSpaceship(Planet* planet) override
+	virtual void comeOffFromTheSpaceship(std::shared_ptr<Planet> planet) override
 	{
 		std::cout << "Come off on the Planet " << planet->getNamePlanet() << " on the spaceship " << planet->getNameSpaceship() << std::endl;
 	}
@@ -54,15 +55,15 @@ public:
 
 class Spaceship
 {
-	std::vector <IAstronauts*> m_astronauts;
+	std::vector <std::shared_ptr<IAstronaut>> m_astronauts;
 public:
 
-	void take(IAstronauts* _astronauts)
+	void take(std::shared_ptr<IAstronaut> _astronaut)
 	{
-		m_astronauts.push_back(_astronauts);
+		m_astronauts.push_back(_astronaut);
 	}
 
-	void goDown(IAstronauts* _astronauts)
+	void goDown(std::shared_ptr<IAstronaut> _astronauts)
 	{
 		auto it = std::find(m_astronauts.begin(), m_astronauts.end(), _astronauts);
 		if (it != m_astronauts.end())
@@ -71,17 +72,17 @@ public:
 		}
 	}
 
-	void plateShutdown(Planet* planet)
+	void plateShutdown(std::shared_ptr<Planet> planet)
 	{
-		for (IAstronauts* astronauts : m_astronauts)
+		for (std::shared_ptr<IAstronaut> astronauts : m_astronauts)
 		{
 			astronauts->comeOffFromTheSpaceship(planet);
 		}
 	}
 
-	void placingBord(Planet* planet)
+	void placingBord(std::shared_ptr<Planet> planet)
 	{
-		for (IAstronauts* astronauts : m_astronauts)
+		for (std::shared_ptr<IAstronaut> astronauts : m_astronauts)
 		{
 			astronauts->sitOnTheSpaceship(planet);
 		}
@@ -94,7 +95,7 @@ int main()
 {
 	//Planet::sharedPlanet("Earth", "Spaceship");
 	Spaceship sp;
-	IAstronauts* a1 = new Astronauts;
+	std::shared_ptr<IAstronaut> a1(new Astronaut);
 
 	sp.take(a1);
 	sp.placingBord(Planet::sharedPlanet("Earth", "Spaceship"));
